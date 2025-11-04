@@ -8,6 +8,7 @@ using NAPS2.Pdf;
 using NAPS2.Scan;
 using NAPS2.Scan.Batch;
 using NAPS2.Update;
+using NAPS2.LocalServer;
 
 namespace NAPS2.Modules;
 
@@ -37,6 +38,9 @@ public class GuiModule : Module
         builder.RegisterType<ImageListActions>().AsSelf().SingleInstance();
         builder.RegisterInstance(EtoPlatform.Current.DarkModeProvider);
         builder.RegisterInstance(EtoPlatform.Current.ColorScheme);
+
+        // Start local scan HTTP server (loopback only)
+        builder.RegisterType<LocalScanServer>().AsSelf().SingleInstance();
 
         builder.RegisterBuildCallback(ctx =>
         {
