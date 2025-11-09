@@ -129,14 +129,28 @@ public class LocalScanServer : IDisposable
                 List<(string fileName, MemoryStream stream)> pdfStreams;
                 if (string.Equals(path, "/scan", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Single scan: Run via ScanDefault and capture newly added images
+                    // Parse newProfile query parameter (defaults to false)
+                    bool newProfile = false;
+                    if (req.QueryString["newProfile"] != null)
+                    {
+                        bool.TryParse(req.QueryString["newProfile"], out newProfile);
+                    }
+
+                    // Single scan: Run via ScanDefault or ScanWithNewProfile and capture newly added images
                     var scanTcs = new TaskCompletionSource<List<ProcessedImage>>();
                     Invoker.Current.InvokeDispatch(async () =>
                     {
                         try
                         {
                             int startCount = _imageList.Images.Count;
-                            await _desktopScanController.ScanDefault();
+                            if (newProfile)
+                            {
+                                await _desktopScanController.ScanWithNewProfile();
+                            }
+                            else
+                            {
+                                await _desktopScanController.ScanDefault();
+                            }
                             var newUiImages = _imageList.Images.Skip(startCount).ToList();
                             var clones = newUiImages.Select(i => i.GetClonedImage()).ToList();
                             scanTcs.TrySetResult(clones);
